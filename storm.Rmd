@@ -1,0 +1,112 @@
+Tornados and Hail - Identifying storm types of greatest health and economic cost to the USA (1950 - 2011).
+========================================================
+
+## Synopsis
+Data from the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database was examined for the years between 1950 and 2011.
+The sum cost to human health and the economy was calculated and broken down according to the storm type.  
+
+## Data processing
+
+Data was downloaded from the provided source and read into a variable called data.
+
+
+```{r preprocessing cache=TRUE}
+setwd(".")
+download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", dest="tmp.bz2", method="curl")
+data <- read.csv("tmp.bz2")
+
+
+#initial look at table
+colnames(data)
+
+dim(data) #902297     37
+
+dim(data)[1] * dim(data)[2] # 33384989
+
+str(data)
+
+#how much data is missing
+sum(is.na(data)) # 1745947
+sum(is.na(data))/(dim(data)[1] * dim(data)[2])*100 # 5.2%
+
+sum(complete.cases(data)) # 0
+with(data, table(COUNTYENDN))
+unique(data$COUNTYENDN) #NA - some column(s) are completely missing
+
+
+
+#are events unique?
+nrow(data) #902297
+with(data, length(unique(BGN_DATE))) #16335
+with(data, length(unique(c(BGN_DATE, BGN_TIME)))) #16335 - same!
+with(data, length(unique(BGN_DATE)))/nrow(data)*100 # 1.8%
+
+with(data, length(unique(c(BGN_DATE, BGN_TIME, EVTYPE, STATE)))) #16335 - same!
+with(data, length(unique(c(BGN_DATE, BGN_TIME, EVTYPE, STATE, BGN_LOCATI)))) #54429 - hmmmm
+with(data, length(unique(c(BGN_DATE, BGN_TIME, EVTYPE, STATE, BGN_LOCATI, END_DATE)))) #54429 - same
+with(data, length(unique(c(BGN_DATE, BGN_TIME, EVTYPE, STATE, BGN_LOCATI, END_DATE, END_AZI, FATALITIES, INJURIES)))) #54430 - 1 duplication?
+
+#this following line (compared to the previous line) means that fatalities and injuries could have been added multiple times for the same event but with different property damage entries - different insurance company reports for the same event?
+with(data, length(unique(c(BGN_DATE, BGN_TIME, EVTYPE, STATE, BGN_LOCATI, END_DATE, END_AZI, FATALITIES, INJURIES, PROPDMG)))) #55258
+with(data, length(unique(c(BGN_DATE, BGN_TIME, EVTYPE, STATE, BGN_LOCATI, END_DATE, END_AZI, FATALITIES, INJURIES, PROPDMG, CROPDMG)))) #55349 - see note above - is double reporting going on
+with(data, length(unique(c(BGN_DATE, BGN_TIME, EVTYPE, STATE, BGN_LOCATI, END_DATE, END_AZI, FATALITIES, INJURIES, PROPDMG, CROPDMG, LATITUDE, LONGITUDE)))) #55349 - see note above - is double reporting going on
+
+
+
+#no code book was made available for this data set and it is not available at any obvious location including
+#http://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/Storm-Data-Export-Format.docx
+#or the documents suggestedby the course page
+
+
+
+```
+
+## Results
+
+```{r analysis cache=TRUE}
+
+par.original <- par(las=2) # make label text perpendicular to axis
+par(mfrow=c(2,1))
+par(mar=c(5,8,4,2)) # increase y-axis margin.
+
+#look at total deaths per event type
+fat<-tapply(data$FATALITIES, INDEX=data$EVTYPE, sum)
+big.fat<-fat[fat > 100]
+barplot(big.fat, main="Total fatalities associated with storm types", horiz=TRUE, cex.names=0.5)
+
+#look at total injuries
+inj<-tapply(data$INJURIES, INDEX=data$EVTYPE, sum)
+big.inj<-inj[inj > 100]
+barplot(big.inj, main="Total injuries associated with storm types", horiz=TRUE, cex.names=0.5)
+print("upperleft", "Figure 1")
+
+```
+
+Figure legend.
+
+```{r}
+#look at total property damage
+prop<-tapply(data$PROPDMG, INDEX=data$EVTYPE, sum)
+big.prop<-prop[prop > 500000]
+barplot(big.prop, main="Total property damage (unknown units) associated with storm types", horiz=TRUE, cex.names=0.5)
+
+#look at total crop damage
+crop<-tapply(data$CROPDMG, INDEX=data$EVTYPE, sum)
+big.crop<-crop[crop > 10000]
+barplot(big.crop, main="Total crop damage (unknown units) associated with storm types", horiz=TRUE, cex.names=0.5)
+
+
+par(par.original)
+```
+
+Figure legend
+
+## Conclusions
+
+Your data analysis must address the following questions:
+
+Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+
+Across the United States, which types of events have the greatest economic consequences?
+
+Consider writing your report as if it were to be read by a government or municipal manager who might be responsible for preparing for severe weather events and will need to prioritize resources for different types of events. However, there is no need to make any specific recommendations in your report.
