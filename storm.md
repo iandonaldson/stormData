@@ -10,44 +10,74 @@ The sum cost to human health and the economy was calculated and broken down acco
 Data was downloaded from the provided source and read into a variable called data.  No codebook was provided for the data set.
 
 
-```{r preprocessing, cache=TRUE}
+
+```r
 setwd(".")
-download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", dest="tmp.bz2", method="curl")
+download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", 
+    dest = "tmp.bz2", method = "curl")
 data <- read.csv("tmp.bz2")
 
 
-#initial look at table
+# initial look at table
 colnames(data)
-
-dim(data) #902297     37
-
-#no code book was made available for this data set and it is not available at any obvious location including
-#http://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/Storm-Data-Export-Format.docx
-#or the documents suggested by the course page
+```
 
 ```
+##  [1] "STATE__"    "BGN_DATE"   "BGN_TIME"   "TIME_ZONE"  "COUNTY"    
+##  [6] "COUNTYNAME" "STATE"      "EVTYPE"     "BGN_RANGE"  "BGN_AZI"   
+## [11] "BGN_LOCATI" "END_DATE"   "END_TIME"   "COUNTY_END" "COUNTYENDN"
+## [16] "END_RANGE"  "END_AZI"    "END_LOCATI" "LENGTH"     "WIDTH"     
+## [21] "F"          "MAG"        "FATALITIES" "INJURIES"   "PROPDMG"   
+## [26] "PROPDMGEXP" "CROPDMG"    "CROPDMGEXP" "WFO"        "STATEOFFIC"
+## [31] "ZONENAMES"  "LATITUDE"   "LONGITUDE"  "LATITUDE_E" "LONGITUDE_"
+## [36] "REMARKS"    "REFNUM"
+```
+
+```r
+
+dim(data)  #902297     37
+```
+
+```
+## [1] 902297     37
+```
+
+```r
+
+# no code book was made available for this data set and it is not available
+# at any obvious location including
+# http://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/Storm-Data-Export-Format.docx
+# or the documents suggested by the course page
+```
+
 
 ## Results
 
 The total number of reported fatalities and injuries due to storms between 1950 and 2011 were both calculated  for each storm type (column EVTYPE).  The sums were plotted as a bar plot (Figure 1).  Storm types responsible for fewer than 100 fatalities or injuries were removed from the plot.
 
-```{r analysis.health, fig.width=7, fig.height=10, results='hold', cache=TRUE}
 
-par.original <- par(las=2) # make label text perpendicular to axis
-par(mfrow=c(2,1))
-par(mar=c(5,12,4,2)) # increase y-axis margin.
+```r
 
-#look at total deaths per event type
-fat<-tapply(data$FATALITIES, INDEX=data$EVTYPE, sum)
-big.fat<-fat[fat > 100]
-barplot(big.fat, main="A. Total fatalities associated with storm types", horiz=TRUE, cex.names=0.5)
-mtext("Figure 1.", side=2, line=3, at=30, font=2, cex=1.3)
+par.original <- par(las = 2)  # make label text perpendicular to axis
+par(mfrow = c(2, 1))
+par(mar = c(5, 12, 4, 2))  # increase y-axis margin.
 
-#look at total injuries
-inj<-tapply(data$INJURIES, INDEX=data$EVTYPE, sum)
-big.inj<-inj[inj > 100]
-barplot(big.inj, main="B. Total injuries associated with storm types", horiz=TRUE, cex.names=0.5)
+# look at total deaths per event type
+fat <- tapply(data$FATALITIES, INDEX = data$EVTYPE, sum)
+big.fat <- fat[fat > 100]
+barplot(big.fat, main = "A. Total fatalities associated with storm types", horiz = TRUE, 
+    cex.names = 0.5)
+mtext("Figure 1.", side = 2, line = 3, at = 30, font = 2, cex = 1.3)
+
+# look at total injuries
+inj <- tapply(data$INJURIES, INDEX = data$EVTYPE, sum)
+big.inj <- inj[inj > 100]
+barplot(big.inj, main = "B. Total injuries associated with storm types", horiz = TRUE, 
+    cex.names = 0.5)
 ```
+
+![plot of chunk analysis.health](figure/analysis_health.png) 
+
 
 **Figure 1.  Total fatalities and injuries associated with storm types.** 
 
@@ -55,31 +85,39 @@ The total of all reported property damage and crop damage between 1950 and 2011 
 
 
 
-```{r analysis.property, fig.width=9, fig.height=8, results='hold', cache=TRUE}
+
+```r
 
 par(par.original)
-par.original <- par(las=2) # make label text perpendicular to axis
-par(mfrow=c(2,1))
-par(mar=c(5,12,4,2)) # increase y-axis margin.
+par.original <- par(las = 2)  # make label text perpendicular to axis
+par(mfrow = c(2, 1))
+par(mar = c(5, 12, 4, 2))  # increase y-axis margin.
 
 
-#look at total property damage
-prop<-tapply(data$PROPDMG, INDEX=data$EVTYPE, sum)
-big.prop<-prop[prop > 500000]
-barplot(big.prop, main="A. Total property damage (unknown units) associated with storm types", horiz=TRUE, cex.names=0.5)
-mtext("Figure 2.", side=2, line=3, at=10, font=2, cex=1.3)
+# look at total property damage
+prop <- tapply(data$PROPDMG, INDEX = data$EVTYPE, sum)
+big.prop <- prop[prop > 5e+05]
+barplot(big.prop, main = "A. Total property damage (unknown units) associated with storm types", 
+    horiz = TRUE, cex.names = 0.5)
+mtext("Figure 2.", side = 2, line = 3, at = 10, font = 2, cex = 1.3)
 
-#look at total crop damage
-crop<-tapply(data$CROPDMG, INDEX=data$EVTYPE, sum)
-big.crop<-crop[crop > 10000]
-barplot(big.crop, main="B. Total crop damage (unknown units) associated with storm types", horiz=TRUE, cex.names=0.5)
+# look at total crop damage
+crop <- tapply(data$CROPDMG, INDEX = data$EVTYPE, sum)
+big.crop <- crop[crop > 10000]
+barplot(big.crop, main = "B. Total crop damage (unknown units) associated with storm types", 
+    horiz = TRUE, cex.names = 0.5)
 ```
+
+![plot of chunk analysis.property](figure/analysis_property.png) 
+
 
 **Figure 2.  Total property and crop damage costs associated with storm types.** 
 
-```{r}
+
+```r
 par(par.original)
 ```
+
 
 ## Conclusions
 
